@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌾 Seed Demand Prediction</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2d6a4f;
+            --primary-light: #40916c;
+            --primary-dark: #1b4332;
+            --accent: #95d5b2;
+            --bg-dark: #1a1a2e;
+            --bg-card: #16213e;
+            --bg-input: #0f3460;
+            --text-primary: #ffffff;
+            --text-secondary: #b8c5d6;
+            --warning: #e9c46a;
+            --success: #52b788;
+            --gradient: linear-gradient(135deg, #2d6a4f 0%, #40916c 100%);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 30px 0 40px;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+        
+        .main-grid {
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 30px;
+        }
+        
+        @media (max-width: 900px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 18px;
+        }
+        
+        label {
+            display: block;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+        
+        input[type="number"] {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--bg-input);
+            border: 2px solid transparent;
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-family: inherit;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        
+        input[type="number"]:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(64, 145, 108, 0.2);
+        }
+        
+        input[type="number"]::placeholder {
+            color: #5a6b80;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 14px 24px;
+            background: var(--gradient);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(45, 106, 79, 0.4);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .results-section {
+            display: none;
+        }
+        
+        .results-section.active {
+            display: block;
+        }
+        
+        .variety-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            margin-top: 20px;
+        }
+        
+        .variety-card {
+            background: linear-gradient(145deg, rgba(45,106,79,0.15), rgba(16,33,62,0.8));
+            border: 1px solid rgba(64,145,108,0.3);
+            border-radius: 14px;
+            padding: 20px;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+        
+        .variety-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--primary-light);
+        }
+        
+        .variety-card.long-duration {
+            border-left: 4px solid #e9c46a;
+        }
+        
+        .variety-card.short-duration {
+            border-left: 4px solid #52b788;
+        }
+        
+        .variety-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .variety-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+        
+        .duration-badge {
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+        
+        .duration-badge.long {
+            background: rgba(233,196,106,0.2);
+            color: #e9c46a;
+        }
+        
+        .duration-badge.short {
+            background: rgba(82,183,136,0.2);
+            color: #52b788;
+        }
+        
+        .demand-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin: 10px 0;
+        }
+        
+        .demand-range {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            font-size: 0.9rem;
+        }
+        
+        .detail-label {
+            color: var(--text-secondary);
+        }
+        
+        .total-card {
+            background: var(--gradient);
+            margin-top: 20px;
+            text-align: center;
+            padding: 30px;
+        }
+        
+        .total-label {
+            font-size: 1rem;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+        
+        .total-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        
+        .total-range {
+            font-size: 1rem;
+            opacity: 0.85;
+            margin-top: 5px;
+        }
+        
+        .legend {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 15px;
+            font-size: 0.85rem;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+        
+        .legend-dot.long { background: #e9c46a; }
+        .legend-dot.short { background: #52b788; }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255,255,255,0.1);
+            border-top-color: var(--primary-light);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .info-note {
+            background: rgba(233,196,106,0.1);
+            border: 1px solid rgba(233,196,106,0.3);
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin-top: 20px;
+            font-size: 0.85rem;
+            color: var(--warning);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌾 Seed Demand Prediction</h1>
+            <p class="subtitle">Predict seed requirements for rice varieties based on meteorological data</p>
+        </header>
+        
+        <div class="main-grid">
+            <!-- Input Form -->
+            <div class="card">
+                <h2 class="card-title">📊 Enter Meteorological Data</h2>
+                
+                <form id="predictionForm">
+                    <div class="form-group">
+                        <label for="max_temp">Maximum Temperature (°C)</label>
+                        <input type="number" id="max_temp" step="0.1" value="43" placeholder="e.g., 43">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="min_temp">Minimum Temperature (°C)</label>
+                        <input type="number" id="min_temp" step="0.1" value="21" placeholder="e.g., 21">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="pre_monsoon">Pre-Monsoon Rainfall (mm)</label>
+                        <input type="number" id="pre_monsoon" step="0.1" value="50" placeholder="e.g., 50">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="monsoon">Monsoon Rainfall (mm)</label>
+                        <input type="number" id="monsoon" step="0.1" value="200" placeholder="e.g., 200">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="post_monsoon">Post-Monsoon Rainfall (mm)</label>
+                        <input type="number" id="post_monsoon" step="0.1" value="30" placeholder="e.g., 30">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="monsoon_duration">Monsoon Duration (days)</label>
+                        <input type="number" id="monsoon_duration" value="90" placeholder="e.g., 90">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="total_area">Total Growing Area (hectares) - Optional</label>
+                        <input type="number" id="total_area" placeholder="Leave empty to use historical average">
+                    </div>
+                    
+                    <button type="submit" class="btn" id="predictBtn">
+                        🔮 Predict Seed Demand
+                    </button>
+                </form>
+                
+                <div class="info-note">
+                    <strong>💡 Note:</strong> Seeding rate used: 15 kg/ha (~6 kg/acre)
+                </div>
+            </div>
+            
+            <!-- Results Section -->
+            <div class="results-section" id="resultsSection">
+                <div class="card">
+                    <h2 class="card-title">📈 Prediction Results</h2>
+                    
+                    <div class="legend">
+                        <div class="legend-item">
+                            <div class="legend-dot long"></div>
+                            <span>Long Duration (135-145 days)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot short"></div>
+                            <span>Short Duration (110-120 days)</span>
+                        </div>
+                    </div>
+                    
+                    <div class="variety-grid" id="varietyGrid">
+                        <!-- Results will be injected here -->
+                    </div>
+                    
+                    <div class="card total-card" id="totalCard">
+                        <div class="total-label">Total Seed Demand</div>
+                        <div class="total-value" id="totalDemand">0 Qtl</div>
+                        <div class="total-range" id="totalRange">Range: 0 - 0 Qtl</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Loading State -->
+            <div class="card loading" id="loadingState" style="display: none;">
+                <div class="spinner"></div>
+                <p>Calculating predictions...</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const form = document.getElementById('predictionForm');
+        const resultsSection = document.getElementById('resultsSection');
+        const loadingState = document.getElementById('loadingState');
+        const varietyGrid = document.getElementById('varietyGrid');
+        
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Show loading
+            resultsSection.classList.remove('active');
+            loadingState.style.display = 'block';
+            
+            const formData = {
+                max_temp: document.getElementById('max_temp').value,
+                min_temp: document.getElementById('min_temp').value,
+                pre_monsoon: document.getElementById('pre_monsoon').value,
+                monsoon: document.getElementById('monsoon').value,
+                post_monsoon: document.getElementById('post_monsoon').value,
+                monsoon_duration: document.getElementById('monsoon_duration').value,
+                total_area: document.getElementById('total_area').value || null
+            };
+            
+            try {
+                const response = await fetch('/api/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayResults(data.predictions);
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                alert('Failed to get predictions: ' + error.message);
+            } finally {
+                loadingState.style.display = 'none';
+            }
+        });
+        
+        function displayResults(predictions) {
+            varietyGrid.innerHTML = '';
+            
+            let totalMin = 0, totalPred = 0, totalMax = 0;
+            
+            // Sort varieties: long duration first, then short
+            const sortedVarieties = Object.entries(predictions).sort((a, b) => {
+                const aLong = a[1].duration_category.includes('Long') ? 0 : 1;
+                const bLong = b[1].duration_category.includes('Long') ? 0 : 1;
+                return aLong - bLong;
+            });
+            
+            for (const [variety, pred] of sortedVarieties) {
+                const isLong = pred.duration_category.includes('Long');
+                const [minDemand, maxDemand] = pred.seed_demand_range_qtl;
+                
+                totalMin += minDemand;
+                totalPred += pred.seed_demand_qtl;
+                totalMax += maxDemand;
+                
+                const card = document.createElement('div');
+                card.className = `variety-card ${isLong ? 'long-duration' : 'short-duration'}`;
+                card.innerHTML = `
+                    <div class="variety-header">
+                        <span class="variety-name">${pred.display_name}</span>
+                        <span class="duration-badge ${isLong ? 'long' : 'short'}">
+                            ${pred.growth_days} days
+                        </span>
+                    </div>
+                    <div class="demand-value">${pred.seed_demand_qtl.toLocaleString()} Qtl</div>
+                    <div class="demand-range">Range: ${minDemand.toLocaleString()} - ${maxDemand.toLocaleString()} Qtl</div>
+                    <div class="detail-row">
+                        <span class="detail-label">Market Share</span>
+                        <span>${pred.predicted_share}%</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Growing Area</span>
+                        <span>${pred.predicted_area_ha.toLocaleString()} Ha</span>
+                    </div>
+                `;
+                varietyGrid.appendChild(card);
+            }
+            
+            // Update totals
+            document.getElementById('totalDemand').textContent = `${totalPred.toLocaleString()} Qtl`;
+            document.getElementById('totalRange').textContent = `Range: ${totalMin.toLocaleString()} - ${totalMax.toLocaleString()} Qtl`;
+            
+            resultsSection.classList.add('active');
+        }
+    </script>
+</body>
+</html>
